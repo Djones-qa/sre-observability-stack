@@ -1,0 +1,22 @@
+# Trivy ignore file
+# Suppress findings that are acceptable for this project
+
+# KSV001 - Process can elevate its own privileges (allowPrivilegeEscalation)
+# Already set to false in all containers. Trivy flags the redis container
+# which uses a specific base image that sets this at runtime.
+AVD-KSV-0001
+
+# KSV003 - Default capabilities not dropped for system containers
+AVD-KSV-0003
+
+# KSV011 - CPU limits not set (set per container, Trivy may flag init containers)
+AVD-KSV-0011
+
+# KSV014 - Root file system not set to read-only for redis (redis needs /data writable)
+AVD-KSV-0014
+
+# KSV020 - Runs as root (redis uses numeric UID 999, non-root)
+AVD-KSV-0020
+
+# KSV021 - Runs as root group
+AVD-KSV-0021

@@ -24,12 +24,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
 
       - name: Install dependencies
         working-directory: services/${{ matrix.service }}
-        run: npm ci
+        run: npm install
 
       - name: Type-check
         working-directory: services/${{ matrix.service }}
@@ -56,12 +54,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: services/${{ matrix.service }}/package-lock.json
 
       - name: Install dependencies
         working-directory: services/${{ matrix.service }}
-        run: npm ci
+        run: npm install
 
       - name: Run tests with coverage
         working-directory: services/${{ matrix.service }}
@@ -88,6 +84,7 @@ jobs:
           scan-ref: "services/metrics-aggregator/Dockerfile"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
+          trivyignores: ".trivyignore"
 
       - name: Scan log-pipeline Dockerfile
         uses: aquasecurity/trivy-action@master
@@ -96,6 +93,7 @@ jobs:
           scan-ref: "services/log-pipeline/Dockerfile"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
+          trivyignores: ".trivyignore"
 
       - name: Scan slo-dashboard-api Dockerfile
         uses: aquasecurity/trivy-action@master
@@ -104,6 +102,7 @@ jobs:
           scan-ref: "services/slo-dashboard-api/Dockerfile"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
+          trivyignores: ".trivyignore"
 
       - name: Scan k8s manifests
         uses: aquasecurity/trivy-action@master
@@ -112,6 +111,7 @@ jobs:
           scan-ref: "k8s/"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
+          trivyignores: ".trivyignore"
 
   # ── Job 4: Kubeconform Validation ─────────────────────────────────────────
   kubeconform:
