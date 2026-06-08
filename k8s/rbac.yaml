@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metrics-aggregator
+  namespace: sre-observability
+  labels:
+    app: metrics-aggregator
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: log-pipeline
+  namespace: sre-observability
+  labels:
+    app: log-pipeline
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: slo-dashboard-api
+  namespace: sre-observability
+  labels:
+    app: slo-dashboard-api
+automountServiceAccountToken: false

@@ -1,0 +1,99 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  metrics-aggregator:
+    build:
+      context: ./services/metrics-aggregator
+      target: production
+    ports:
+      - '4000:4000'
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  log-pipeline:
+    build:
+      context: ./services/log-pipeline
+      target: production
+    ports:
+      - '4001:4001'
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  slo-dashboard-api:
+    build:
+      context: ./services/slo-dashboard-api
+      target: production
+    ports:
+      - '4002:4002'
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  mock-metrics-target:
+    image: prom/node-exporter:latest
+    ports:
+      - '9100:9100'
+    profiles:
+      - testing
+
+  mock-log-sender:
+    image: curlimages/curl:latest
+    profiles:
+      - testing
+    depends_on:
+      - log-pipeline
+    entrypoint: >
+      sh -c "
+        while true; do
+          curl -s -X POST http://log-pipeline:4001/ingest \
+            -H 'Content-Type: application/json' \
+            -d '{\"service\":\"mock-sender\",\"level\":\"info\",\"message\":\"heartbeat\"}';
+          sleep 5;
+        done
+      "
+    restart: unless-stopped
+
+volumes:
+  redis-data:

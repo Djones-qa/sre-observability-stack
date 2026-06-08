@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-pipeline
+  namespace: sre-observability
+  labels:
+    app: log-pipeline
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: log-pipeline
+  template:
+    metadata:
+      labels:
+        app: log-pipeline
+    spec:
+      serviceAccountName: log-pipeline
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: log-pipeline
+          image: log-pipeline:latest
+          ports:
+            - containerPort: 4001
+          env:
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: LOG_PORT
+              value: "4001"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: log-pipeline
+  namespace: sre-observability
+  labels:
+    app: log-pipeline
+spec:
+  selector:
+    app: log-pipeline
+  ports:
+    - port: 4001
+      targetPort: 4001

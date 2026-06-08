@@ -1,0 +1,18 @@
+{
+  "name": "sre-observability-stack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade SRE observability platform — metrics, logs, SLOs",
+  "workspaces": [
+    "services/metrics-aggregator",
+    "services/log-pipeline",
+    "services/slo-dashboard-api"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "author": "Darrius Jones <github.com/Djones-qa>",
+  "license": "MIT"
+}

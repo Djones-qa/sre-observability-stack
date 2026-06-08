@@ -1,0 +1,21 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: metrics-aggregator-pdb
+  namespace: sre-observability
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: metrics-aggregator
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: slo-dashboard-api-pdb
+  namespace: sre-observability
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: slo-dashboard-api

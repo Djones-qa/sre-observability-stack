@@ -1,0 +1,116 @@
+# Default deny-all ingress and egress for all pods in the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: sre-observability
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# metrics-aggregator: ingress on 4000, egress to redis:6379 + external scrape targets
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: metrics-aggregator-policy
+  namespace: sre-observability
+spec:
+  podSelector:
+    matchLabels:
+      app: metrics-aggregator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: 4000
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - port: 6379
+    - ports:
+        - port: 80
+        - port: 443
+        - port: 9090
+        - port: 9100
+---
+# log-pipeline: ingress on 4001, egress to redis:6379
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: log-pipeline-policy
+  namespace: sre-observability
+spec:
+  podSelector:
+    matchLabels:
+      app: log-pipeline
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: 4001
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - port: 6379
+---
+# slo-dashboard-api: ingress on 4002, egress to redis:6379
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: slo-dashboard-api-policy
+  namespace: sre-observability
+spec:
+  podSelector:
+    matchLabels:
+      app: slo-dashboard-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: 4002
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - port: 6379
+---
+# redis: ingress from service pods on 6379, no egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-policy
+  namespace: sre-observability
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: metrics-aggregator
+        - podSelector:
+            matchLabels:
+              app: log-pipeline
+        - podSelector:
+            matchLabels:
+              app: slo-dashboard-api
+      ports:
+        - port: 6379
+  egress: []
