@@ -98,8 +98,8 @@ describe('BurnRateCalculator — Property 4: burn rate formula correctness', () 
    * be non-negative, and be >1 when error_rate > (1 - slo_target).
    */
 
-  const errorRateArb = fc.float({ min: 0, max: 1, noNaN: true, noDefaultInfinity: true });
-  const sloTargetArb = fc.float({ min: 0.001, max: 0.9999, noNaN: true, noDefaultInfinity: true });
+  const errorRateArb = fc.float({ min: 0, max: Math.fround(1), noNaN: true, noDefaultInfinity: true });
+  const sloTargetArb = fc.float({ min: Math.fround(0.001), max: Math.fround(0.9999), noNaN: true, noDefaultInfinity: true });
 
   it('burn rate formula holds for all valid inputs', () => {
     fc.assert(
@@ -149,7 +149,7 @@ describe('BurnRateCalculator — Property 4: burn rate formula correctness', () 
 
   it('error budget remaining is always non-negative (Property 8)', () => {
     const windows: RollupWindow[] = ['1h', '6h', '24h', '72h'];
-    const burnRateArb = fc.float({ min: 0, max: 1000, noNaN: true, noDefaultInfinity: true });
+    const burnRateArb = fc.float({ min: 0, max: Math.fround(1000), noNaN: true, noDefaultInfinity: true });
 
     fc.assert(
       fc.property(burnRateArb, sloTargetArb, fc.constantFrom(...windows), (burnRate, sloTarget, window) => {

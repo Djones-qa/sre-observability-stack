@@ -122,7 +122,7 @@ describe('PrometheusParser — Property 3: parser completeness', () => {
   );
 
   const gaugeBlockArb = metricNameArb.chain((name) =>
-    fc.float({ min: 0, max: 1e6, noNaN: true }).map((value) => {
+    fc.float({ min: 0, max: Math.fround(1e6), noNaN: true }).map((value) => {
       return [`# HELP ${name} A gauge`, `# TYPE ${name} gauge`, `${name} ${value}`].join('\n');
     }),
   );
